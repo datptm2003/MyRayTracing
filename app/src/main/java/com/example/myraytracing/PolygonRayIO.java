@@ -147,7 +147,6 @@ public class PolygonRayIO extends LinearLayout {
     }
 
     public Polygon getPolygon() {
-//        float radius = Float.parseFloat(radiusInput.getText().toString());
         float vertex1X = Float.parseFloat(vertex1XInput.getText().toString());
         float vertex1Y = Float.parseFloat(vertex1YInput.getText().toString());
         float vertex1Z = Float.parseFloat(vertex1ZInput.getText().toString());
@@ -164,11 +163,10 @@ public class PolygonRayIO extends LinearLayout {
         float vertex3Z = Float.parseFloat(vertex3ZInput.getText().toString());
         float[] vertex3 = new float[]{vertex3X, vertex3Y, vertex3Z};
 
-        polygon = new Polygon(new float[][]{vertex1,vertex2,vertex3});
+        polygon = new Polygon(new float[][]{vertex1,vertex2,vertex3}, new float[] {1.0f,1.0f,1.0f,1.0f});
         return polygon;
     }
     public Ray getRay() {
-//        Log.d("sphere",String.valueOf(sphere));
         float startX = Float.parseFloat(startXInput.getText().toString());
         float startY = Float.parseFloat(startYInput.getText().toString());
         float startZ = Float.parseFloat(startZInput.getText().toString());
@@ -177,12 +175,9 @@ public class PolygonRayIO extends LinearLayout {
         float directionZ = Float.parseFloat(directionZInput.getText().toString());
         float[] start = new float[]{startX, startY, startZ};
         float[] direction = new float[]{directionX, directionY, directionZ};
-//        Log.d("radius",Float.toString(radius));
-//        Log.d("centerX",Float.toString(centerX));
-//        Log.d("centerY",Float.toString(centerY));
-//        Log.d("centerZ",Float.toString(centerZ));
 
-        ray = new Ray(start,direction);
+
+        ray = new Ray(start,direction,new float[]{0.0f,0.0f,1.0f,1.0f});
         return ray;
     }
 

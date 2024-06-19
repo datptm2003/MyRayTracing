@@ -8,22 +8,31 @@ import android.util.Log;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class GLRenderer implements GLSurfaceView.Renderer {
+public class SphereGLRenderer implements GLSurfaceView.Renderer {
 
-    private RayModel rayModel;
-    private SphereModel sphereModel;
+//    private RayModel rayModel;
+//    private SphereModel sphereModel;
+    private Ray ray;
+    private Sphere sphere;
     private float[] mViewMatrix = new float[16];
     private float[] mProjectionMatrix = new float[16];
+    private float[] mModelMatrix = new float[16];
     private float[] mMVPMatrix = new float[16];
 
-    public GLRenderer(Sphere sphere, Ray ray) {
-        sphereModel = new SphereModel(sphere);
-        rayModel = new RayModel(ray);
-        Log.d("testSphere",Float.toString(sphere.getRadius()));
+    private SphereRayIntersection intersection;
+
+    public SphereGLRenderer(Sphere sphere, Ray ray) {
+//        sphereModel = new SphereModel(sphere);
+//        rayModel = new RayModel(ray);
+        this.sphere = sphere;
+        this.ray = ray;
+//        Log.d("testSphere",Float.toString(sphere.getRadius()));
+        intersection = new SphereRayIntersection(sphere, ray);
+        intersection.solve();
     }
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 //        GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -34,7 +43,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 //        float[] center = {0.0f, 0.0f, 0.0f};    // sphere's center
 //        rayModel = new RayModel(new Ray(start, direction));
 //        sphereModel = new SphereModel(new Sphere(radius, center, new float[]{1.0f,1.0f,1.0f,1.0f}));
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0.0f, 3.0f, 0, 0, 0, 0, 1, 0);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0.0f, 8.0f, 0, 0, 0, 0, 1, 0);
     }
 
     @Override
@@ -44,20 +53,22 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 //        int viewMatrixHandle = GLES20.glGetUniformLocation(rayModel.mProgram, "u_ViewMatrix");
 //
 //        GLES20.glUniformMatrix4fv(viewMatrixHandle, 1, false, mViewMatrix, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+        SphereModel sphereModel = new SphereModel(sphere);
+        RayModel rayModel = new RayModel(ray);
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         sphereModel.draw(mMVPMatrix);
-        SphereRayIntersection intersection = new SphereRayIntersection(sphereModel.sphere, rayModel.ray);
-        intersection.solve();
 //        Log.d("b",Float.toString(intersection.b));
 //        Log.d("c",Float.toString(intersection.c));
 //        Log.d("point0",Float.toString(intersection.sol()[0]));
 //        Log.d("point1",Float.toString(intersection.sol()[1]));
 //        Log.d("point2",Float.toString(intersection.sol()[2]));
-        SphereModel point1 = new SphereModel(new Sphere(0.02f,intersection.sol()[0],new float[]{1.0f,0f,0f,1.0f}));
-        SphereModel point2 = new SphereModel(new Sphere(0.02f,intersection.sol()[1],new float[]{1.0f,0f,0f,1.0f}));
+        SphereModel point1 = new SphereModel(new Sphere(0.04f,intersection.sol()[0],new float[]{1.0f,0f,0f,1.0f}));
+        SphereModel point2 = new SphereModel(new Sphere(0.04f,intersection.sol()[1],new float[]{1.0f,0f,0f,1.0f}));
         point1.draw(mMVPMatrix);
         point2.draw(mMVPMatrix);
-        rayModel.draw();
+        rayModel.draw(mMVPMatrix);
     }
 
     @Override
@@ -69,10 +80,5 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         Matrix.frustumM(mProjectionMatrix, 0,-ratio, ratio, -1, 1, near, far);
     }
 
-    public static int loadShader(int type, String shaderCode) {
-        int shader = GLES20.glCreateShader(type);
-        GLES20.glShaderSource(shader, shaderCode);
-        GLES20.glCompileShader(shader);
-        return shader;
-    }
+
 }

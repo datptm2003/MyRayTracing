@@ -20,17 +20,18 @@ public class RayModel {
 
     // Vertex Shader code
     private final String vertexShaderCode =
-            "attribute vec4 vPosition;" +
+            "attribute vec4 a_Position;" +
+                    "uniform mat4 u_MVPMatrix;" +
                     "void main() {" +
-                    "  gl_Position = vPosition;" +
+                    "  gl_Position = u_MVPMatrix * a_Position;" +
                     "}";
 
     // Fragment Shader code
     private final String fragmentShaderCode =
             "precision mediump float;" +
-                    "uniform vec4 vColor;" +
+                    "uniform vec4 u_Color;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor;" +
+                    "  gl_FragColor = u_Color;" +
                     "}";
 
     // Number of coordinates per vertex in this array
@@ -39,7 +40,7 @@ public class RayModel {
     public Ray ray;
 
     // Set color with red, green, blue and alpha (opacity) values
-    float color[] = { 0.6f, 0.7f, 0.2f, 1.0f };
+    float color[] = { 0f, 0f, 1f, 1.0f };
 
     public RayModel(Ray ray) {
         this.ray = ray;
@@ -48,21 +49,21 @@ public class RayModel {
         bb.order(ByteOrder.nativeOrder());
         vertexBuffer = bb.asFloatBuffer();
 
-        Log.d("vertexCount",Integer.toString(vertexCount));
+//        Log.d("vertexCount",Integer.toString(vertexCount));
 
         float[] rayCoords = new float[] {
-                ray.start[0], ray.start[1], ray.start[2],
-                ray.start[0] + 10*ray.direction[0], ray.start[1] + 10*ray.direction[1], ray.start[2] + 10*ray.direction[2]
+                ray.getStart()[0], ray.getStart()[1], ray.getStart()[2],
+                ray.getStart()[0] + 1000*ray.getDirection()[0], ray.getStart()[1] + 1000*ray.getDirection()[1], ray.getStart()[2] + 1000*ray.getDirection()[2]
         };
-        vertexCount = rayCoords.length / 2;
+        vertexCount = 3;
         // Initialize vertex byte buffer for shape coordinates
 
         vertexBuffer.put(rayCoords);
         vertexBuffer.position(0);
 
 
-        int vertexShader = GLRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
-        int fragmentShader = GLRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
+        int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+        int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 
         mProgram = GLES20.glCreateProgram();             // Create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader);   // Add the vertex shader to program
@@ -70,32 +71,32 @@ public class RayModel {
         GLES20.glLinkProgram(mProgram);                  // Create OpenGL program executables
     }
 
-    public void draw() {
-        // Add program to OpenGL environment
-
+    public void draw(float[] mvpMatrix) {
         GLES20.glUseProgram(mProgram);
-//        Log.d("ray","ray");
-        // Get handle to vertex shader's vPosition member
-        positionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
 
-        // Enable a handle to the triangle vertices
+        int positionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
+        int mvpMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
+        int colorHandle = GLES20.glGetUniformLocation(mProgram, "u_Color");
+
         GLES20.glEnableVertexAttribArray(positionHandle);
+        GLES20.glVertexAttribPointer(positionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexBuffer);
 
-        // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(positionHandle, 3,
-                GLES20.GL_FLOAT, false,
-                3, vertexBuffer);
+        GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0);
+        GLES20.glUniform4fv(colorHandle, 1, new float[]{0.0f, 1.0f, 0.0f, 1.0f}, 0);
 
-        // Get handle to fragment shader's vColor member
-        colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+        GLES20.glLineWidth(5.0f); // Set the line width to 5.0 units
 
-        // Set color for drawing the triangle
-        GLES20.glUniform4fv(colorHandle, 1, color, 0);
-        GLES20.glLineWidth(3.0f); // Thay đổi độ dày của đường vẽ
-        // Draw the triangle
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0, vertexCount);
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
 
-        // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle);
     }
+    public static int loadShader(int type, String shaderCode) {
+        int shader = GLES20.glCreateShader(type);
+        GLES20.glShaderSource(shader, shaderCode);
+        GLES20.glCompileShader(shader);
+        return shader;
+    }
+
 }
+
+

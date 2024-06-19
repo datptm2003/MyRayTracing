@@ -51,7 +51,7 @@ public class SphereRayIntersection {
 //        Log.d("delta",Float.toString(delta));
         sol[0] = (float) ((-b-sqrt(delta))/2);
         sol[1] = (float) ((-b+sqrt(delta))/2);
-        Log.d("11111111111111111111111111111111111111111", "" + sol[0] + "," + sol[1]);
+        Log.d("Solution", "" + sol[0] + "," + sol[1]);
         return new float[][]{new float[]{ray.getStart()[0] + sol[0] * ray.getDirection()[0], ray.getStart()[1] + sol[0] * ray.getDirection()[1], ray.getStart()[2] + sol[0] * ray.getDirection()[2]}, new float[]{ray.getStart()[0] + sol[1] * ray.getDirection()[0], ray.getStart()[1] + sol[1] * ray.getDirection()[1], ray.getStart()[2] + sol[1] * ray.getDirection()[2]}};
     }
 

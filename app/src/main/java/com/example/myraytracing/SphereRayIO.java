@@ -151,7 +151,7 @@ public class SphereRayIO extends LinearLayout {
 //        Log.d("centerY",Float.toString(centerY));
 //        Log.d("centerZ",Float.toString(centerZ));
 
-        ray = new Ray(start,direction);
+        ray = new Ray(start,direction,new float[]{0.0f,0.0f,1.0f,1.0f});
         return ray;
     }
 
